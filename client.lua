@@ -829,6 +829,15 @@ RegisterNetEvent('qb-vehicleshop:client:buyShowroomVehicle', function(vehicle, p
             end
         end
         local veh = NetworkGetEntityFromNetworkId(netId)
+        startTime = GetGameTimer()
+        while not DoesEntityExist(veh) do
+            Wait(10)
+            veh = NetworkGetEntityFromNetworkId(netId)
+            if GetGameTimer() - startTime > timeout then
+                QBCore.Functions.Notify(Lang:t('error.vehnotfound'), 'error')
+                return
+            end
+        end
         NetworkRequestControlOfEntity(veh)
         startTime = GetGameTimer()
         while not NetworkHasControlOfEntity(veh) do
