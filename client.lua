@@ -819,8 +819,23 @@ RegisterNetEvent('qb-vehicleshop:client:buyShowroomVehicle', function(vehicle, p
 
     tempShop = resolvedShop
     QBCore.Functions.TriggerCallback('qb-vehicleshop:server:spawnvehicle', function(netId, properties, vehPlate)
-        while not NetworkDoesNetworkIdExist(netId) do Wait(10) end
+        local timeout = 5000
+        local startTime = GetGameTimer()
+        while not NetworkDoesNetworkIdExist(netId) do
+            Wait(10)
+            if GetGameTimer() - startTime > timeout then
+                QBCore.Functions.Notify(Lang:t('error.vehnotfound'), 'error')
+                return
+            end
+        end
         local veh = NetworkGetEntityFromNetworkId(netId)
+        NetworkRequestControlOfEntity(veh)
+        startTime = GetGameTimer()
+        while not NetworkHasControlOfEntity(veh) do
+            Wait(10)
+            if GetGameTimer() - startTime > timeout then break end
+        end
+        SetEntityAsMissionEntity(veh, true, true)
         Citizen.Await(CheckPlate(veh, vehPlate))
         QBCore.Functions.SetVehicleProperties(veh, properties)
         exports['LegacyFuel']:SetFuel(veh, 100)
