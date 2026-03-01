@@ -45,6 +45,17 @@ AddEventHandler('onResourceStop', function(resource)
     if ReleaseShopMenuLock then
         ReleaseShopMenuLock()
     end
+    for _, vehicleList in pairs(showroomVehicles) do
+        for _, veh in pairs(vehicleList) do
+            if DoesEntityExist(veh) then
+                if Config.UsingTarget then
+                    exports['qb-target']:RemoveTargetEntity(veh)
+                end
+                DeleteEntity(veh)
+            end
+        end
+    end
+    showroomVehicles = {}
 end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)

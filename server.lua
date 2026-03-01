@@ -32,10 +32,15 @@ end
 QBCore.Functions.CreateCallback('qb-vehicleshop:server:spawnvehicle', function(source, cb, plate, vehicle, coords)
     local vehType = QBCore.Shared.Vehicles[vehicle] and QBCore.Shared.Vehicles[vehicle].type or GetVehicleTypeByModel(vehicle)
     local veh = CreateVehicleServerSetter(GetHashKey(vehicle), vehType, coords.x, coords.y, coords.z, coords.w)
-    while not DoesEntityExist(veh) do
-        Wait(0)
+    if not DoesEntityExist(veh) then
+        cb(0, {}, plate)
+        return
     end
     local netId = NetworkGetNetworkIdFromEntity(veh)
+    while netId == 0 do
+        Wait(0)
+        netId = NetworkGetNetworkIdFromEntity(veh)
+    end
     SetVehicleNumberPlateText(veh, plate)
     local vehProps = {}
     local result = MySQL.rawExecute.await('SELECT mods FROM player_vehicles WHERE plate = ?', { plate })
