@@ -45,6 +45,17 @@ AddEventHandler('onResourceStop', function(resource)
     if ReleaseShopMenuLock then
         ReleaseShopMenuLock()
     end
+    for _, vehicleList in pairs(showroomVehicles) do
+        for _, veh in pairs(vehicleList) do
+            if DoesEntityExist(veh) then
+                if Config.UsingTarget then
+                    exports['qb-target']:RemoveTargetEntity(veh)
+                end
+                DeleteEntity(veh)
+            end
+        end
+    end
+    showroomVehicles = {}
 end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
@@ -829,6 +840,15 @@ RegisterNetEvent('qb-vehicleshop:client:buyShowroomVehicle', function(vehicle, p
             end
         end
         local veh = NetworkGetEntityFromNetworkId(netId)
+        startTime = GetGameTimer()
+        while not DoesEntityExist(veh) do
+            Wait(10)
+            veh = NetworkGetEntityFromNetworkId(netId)
+            if GetGameTimer() - startTime > timeout then
+                QBCore.Functions.Notify(Lang:t('error.vehnotfound'), 'error')
+                return
+            end
+        end
         NetworkRequestControlOfEntity(veh)
         startTime = GetGameTimer()
         while not NetworkHasControlOfEntity(veh) do
